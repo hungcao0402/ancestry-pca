@@ -72,7 +72,7 @@ from sklearn.neighbors import NearestNeighbors
 # fix by Sang 22/08/23
 def percentile_ancestry(eigenvecs, user, p=None, sp=None):
     if user == None:
-        return eigenvecs, None
+        return eigenvecs, None, None
     eigenvec = eigenvecs.copy()
     idx = []
     for id in range(eigenvec.shape[0]):
@@ -90,6 +90,8 @@ def percentile_ancestry(eigenvecs, user, p=None, sp=None):
     neigh.fit(eigenvec_array)
     id_neigh = neigh.kneighbors(np.array(users.loc[idx, ['PC1', 'PC2', 'PC3', 'PC4', 'PC5']]), return_distance=False)
 
+    output = []
+
     # check ancestry
     for i, id in enumerate(idx):
         ancestry_array = eigenvec.loc[id_neigh[i], ['Population Details', 'Super population Details']]
@@ -106,12 +108,14 @@ def percentile_ancestry(eigenvecs, user, p=None, sp=None):
         users.loc[id, 'Super population Details'] = string_sup
         
         if p != None:
-            print('Ancestry of sample', users.loc[id, 'Individual ID'], ':', string_pop)
+            print('Ancestry of sample ' + users.loc[id, 'Individual ID']  + ': ' + string_pop)
+            output.append('Ancestry of sample ' + users.loc[id, 'Individual ID']  + ': ' + string_pop)
         else:
-            print('Ancestry of sample', users.loc[id, 'Individual ID'], ':', string_sup)
+            print('Ancestry of sample', users.loc[id, 'Individual ID'], ': ', string_sup)
+            output.append('Ancestry of sample ' + users.loc[id, 'Individual ID']  + ': ' + string_sup)
     
     # eigenvec = pd.concat([eigenvec, users], axis=0, ignore_index=True)
-    return eigenvec, users
+    return eigenvec, users, output
 
 def ancestry_pca(p=None, sp=None, user=None,
                 mapping_data='database/mapping_population.csv',
@@ -163,7 +167,7 @@ def ancestry_pca(p=None, sp=None, user=None,
     eigenvec = pd.merge(eigenvec, mapping_population)
 
     # check percentile ancestry
-    eigenvec, users = percentile_ancestry(eigenvecs=eigenvec, user=user, p=p, sp=sp)
+    eigenvec, users, output = percentile_ancestry(eigenvecs=eigenvec, user=user, p=p, sp=sp)
 
     # plot
     ax = plt.figure(figsize=(8, 6))
@@ -197,7 +201,7 @@ def ancestry_pca(p=None, sp=None, user=None,
     # plt.show()
     ax.savefig(f'{output_figure}/{output_file}' + '.png', dpi=150, bbox_inches='tight')
 
-    return plt.gcf()
+    return plt.gcf(), output
  
     
 # main
@@ -211,4 +215,5 @@ if __name__ == '__main__':
                     help='Users to check ancestry')
 
     (opt, args) = parser.parse_args()
-    ancestry_pca(p=opt.population, sp=opt.superpopulation, user=opt.user)
+    a, b = ancestry_pca(p=opt.population, sp=opt.superpopulation, user=opt.user)
+    print(b)

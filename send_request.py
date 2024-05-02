@@ -49,3 +49,4 @@ image_buffer = io.BytesIO(image_data)
 im = Image.open(image_buffer)
 im.save('temp.png', 'PNG')
 
+ancestry = predictions['predictions']['ancestry']

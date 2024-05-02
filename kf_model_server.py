@@ -26,7 +26,7 @@ class AncestryPCA(Model):
         superpopulation = None if superpopulation == '' else superpopulation
         user = None if user == '' else user
 
-        figure = ancestry_pca(p=population, sp=superpopulation, user=user)
+        figure, output = ancestry_pca(p=population, sp=superpopulation, user=user)
 
         buffer = io.BytesIO()
         figure.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
@@ -38,7 +38,9 @@ class AncestryPCA(Model):
         # Close the buffer
         buffer.close()
 
-        return {"predictions": {'b64': b64}
+        return {"predictions": {'b64': b64, 
+                                'ancestry': output
+                                }
         }
 
 if __name__ == "__main__":
